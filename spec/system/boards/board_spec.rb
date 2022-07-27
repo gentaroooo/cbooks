@@ -3,6 +3,7 @@ require 'rails_helper'
 RSpec.describe '掲示板', type: :system do
   let(:user) { create(:user) }
   let(:board) { create(:board, user: user) }
+  let(:board_by_others) { create(:board) }
 
   describe '掲示板のCRUD' do
     describe '掲示板の一覧' do
@@ -101,6 +102,25 @@ RSpec.describe '掲示板', type: :system do
           expect(page).to have_content board.title
           expect(page).to have_content board.user.decorate.full_name
           expect(page).to have_content board.body
+        end
+      end  
+    end
+
+    describe '掲示板の編集' do
+      context '他人の掲示板の場合' do
+        it '編集ボタン・削除ボタンが表示されないこと' do
+          login_as_user user
+          visit board_path board_by_others
+          expect(page).not_to have_selector("#button-edit-#{board_by_others.id}")
+          expect(page).not_to have_selector("#button-delete-#{board_by_others.id}")
+        end
+      end
+      context '自分の掲示板の場合' do
+        it '編集ボタン・削除ボタンが表示されること' do
+          login_as_user user
+          visit board_path board
+          expect(page).to have_selector("#button-edit-#{board.id}")
+          expect(page).to have_selector("#button-delete-#{board.id}")
         end
       end
     end
